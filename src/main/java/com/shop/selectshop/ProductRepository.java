@@ -18,7 +18,7 @@ public class ProductRepository {
         } else {
             throw new SQLException("product 테이블의 마지막 id 값을 찾아오지 못했습니다.");
         }
-        ps = connection.prepareStatement("insert into product(id, title, image, link, lprice, myprice) values(?, ?, ?, ?, ?, ?)");
+        ps = connection.prepareStatement("insert into product(id, title, image, link, lowprice, myprice) values(?, ?, ?, ?, ?, ?)");
         ps.setLong(1, product.getId());
         ps.setString(2, product.getTitle());
         ps.setString(3, product.getImage());
@@ -51,7 +51,7 @@ public class ProductRepository {
             product.setId(rs.getLong("id"));
             product.setImage(rs.getString("image"));
             product.setLink(rs.getString("link"));
-            product.setLprice(rs.getInt("lprice"));
+            product.setLprice(rs.getInt("lowrice"));
             product.setMyprice(rs.getInt("myprice"));
             product.setTitle(rs.getString("title"));
         }
@@ -97,7 +97,7 @@ public class ProductRepository {
             product.setId(rs.getLong("id"));
             product.setImage(rs.getString("image"));
             product.setLink(rs.getString("link"));
-            product.setLprice(rs.getInt("lprice"));
+            product.setLprice(rs.getInt("lowrice"));
             product.setMyprice(rs.getInt("myprice"));
             product.setTitle(rs.getString("title"));
             products.add(product);
