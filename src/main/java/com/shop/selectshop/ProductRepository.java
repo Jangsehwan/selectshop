@@ -1,22 +1,12 @@
 package com.shop.selectshop;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@RequiredArgsConstructor // final로 선언된 멤버 변수를 자동으로 생성합니다.
-@RestController // JSON으로 데이터를 주고받음을 선언합니다.
-public class AllInOneController {
-
-    // 신규 상품 등록
-    @PostMapping("/api/products")
-    public Product createProduct(@RequestBody ProductRequestDto requestDto) throws SQLException {
-// 요청받은 DTO 로 DB에 저장할 객체 만들기
-        Product product = new Product(requestDto);
-
-// DB 연결
+public class ProductRepository {
+    public void createProduct(Product product) throws SQLException {
+        // DB 연결
         Connection connection = DriverManager.getConnection("jdbc:h2:mem:springcoredb", "sa", "");
 
 // DB Query 작성
@@ -42,17 +32,13 @@ public class AllInOneController {
 // DB 연결 해제
         ps.close();
         connection.close();
-
-// 응답 보내기
-        return product;
     }
 
-    // 설정 가격 변경
-    @PutMapping("/api/products/{id}")
-    public Long updateProduct(@PathVariable Long id, @RequestBody ProductMypriceRequestDto requestDto) throws SQLException {
+    public Product getProduct(Long id) throws SQLException {
+
         Product product = new Product();
 
-// DB 연결
+        // DB 연결
         Connection connection = DriverManager.getConnection("jdbc:h2:mem:springcoredb", "sa", "");
 
 // DB Query 작성
@@ -68,29 +54,33 @@ public class AllInOneController {
             product.setLprice(rs.getInt("lprice"));
             product.setMyprice(rs.getInt("myprice"));
             product.setTitle(rs.getString("title"));
-        } else {
-            throw new NullPointerException("해당 아이디가 존재하지 않습니다.");
         }
 
-// DB Query 작성
-        ps = connection.prepareStatement("update product set myprice = ? where id = ?");
-        ps.setInt(1, requestDto.getMyprice());
-        ps.setLong(2, product.getId());
+        // DB 연결 해제
+        ps.close();
+        connection.close();
+
+        return product;
+    }
+
+    public void updateMyprice(Long id, int myprice) throws SQLException {
+
+        // DB 연결
+        Connection connection = DriverManager.getConnection("jdbc:h2:mem:springcoredb", "sa", "");
+
+        // DB Query 작성
+        PreparedStatement ps = connection.prepareStatement("update product set myprice = ? where id = ?");
+        ps.setInt(1, myprice);
+        ps.setLong(2, id);
 
 // DB Query 실행
         ps.executeUpdate();
 
 // DB 연결 해제
-        rs.close();
         ps.close();
         connection.close();
-
-// 응답 보내기 (업데이트된 상품 id)
-        return product.getId();
     }
 
-    // 등록된 전체 상품 목록 조회
-    @GetMapping("/api/products")
     public List<Product> getProducts() throws SQLException {
         List<Product> products = new ArrayList<>();
 
@@ -117,7 +107,6 @@ public class AllInOneController {
         rs.close();
         connection.close();
 
-// 응답 보내기
         return products;
     }
 }
