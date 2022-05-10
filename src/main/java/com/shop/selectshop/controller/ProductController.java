@@ -54,4 +54,11 @@ public class ProductController {
 
         return productService.getProducts(userId);
     }
+
+    // 로그인한 회원이 등록한 관심 상품 조회
+    @GetMapping("/api/admin/products")
+    public List<Product> getAllProducts() {
+
+        return productService.getAllProducts();
+    }
 }
