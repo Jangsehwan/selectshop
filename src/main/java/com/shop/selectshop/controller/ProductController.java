@@ -3,8 +3,10 @@ package com.shop.selectshop.controller;
 import com.shop.selectshop.model.Product;
 import com.shop.selectshop.dto.ProductMypriceRequestDto;
 import com.shop.selectshop.dto.ProductRequestDto;
+import com.shop.selectshop.model.UserRoleEnum;
 import com.shop.selectshop.security.UserDetailsImpl;
 import com.shop.selectshop.service.ProductService;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
@@ -55,7 +57,8 @@ public class ProductController {
         return productService.getProducts(userId);
     }
 
-    // 로그인한 회원이 등록한 관심 상품 조회
+    // (관리자용) 전체 상품 조회
+    @Secured(UserRoleEnum.Authority.ADMIN)
     @GetMapping("/api/admin/products")
     public List<Product> getAllProducts() {
 
