@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shop.selectshop.dto.SignupRequestDto;
+import com.shop.selectshop.dto.kakaoUserInfoDto;
 import com.shop.selectshop.model.User;
 import com.shop.selectshop.model.UserRoleEnum;
 import com.shop.selectshop.repository.UserRepository;
@@ -60,6 +61,13 @@ public class UserService {
 
     public void kakaoLogin(String code) throws JsonProcessingException {
         // 1. "인가 코드"로 "액세스 토큰" 요청
+        String accessToken = getAccessToken(code);
+
+        // 2. 토큰으로 카카오 API 호출
+        kakaoUserInfoDto kakaoUserInfoDto = getKakaoUserInfo(accessToken);
+    }
+
+    private String getAccessToken(String code) throws JsonProcessingException {
         // HTTP Header 생성
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
@@ -86,24 +94,28 @@ public class UserService {
         String responseBody = response.getBody();
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(responseBody);
-        String accessToken = jsonNode.get("access_token").asText();
+        return jsonNode.get("access_token").asText();
+    }
 
-        // 2. 토큰으로 카카오 API 호출
+    private kakaoUserInfoDto getKakaoUserInfo(String accessToken) throws JsonProcessingException {
         // HTTP Header 생성
+        HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + accessToken);
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
         // HTTP 요청 보내기
         HttpEntity<MultiValueMap<String, String>> kakaoUserInfoRequest = new HttpEntity<>(headers);
-        response = rt.exchange(
+        RestTemplate rt = new RestTemplate();
+        ResponseEntity<String> response = rt.exchange(
                 "https://kapi.kakao.com/v2/user/me",
                 HttpMethod.POST,
                 kakaoUserInfoRequest,
                 String.class
         );
 
-        responseBody = response.getBody();
-        jsonNode = objectMapper.readTree(responseBody);
+        String responseBody = response.getBody();
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(responseBody);
         Long id = jsonNode.get("id").asLong();
         String nickname = jsonNode.get("properties")
                 .get("nickname").asText();
@@ -111,5 +123,8 @@ public class UserService {
                 .get("email").asText();
 
         System.out.println("카카오 사용자 정보: " + id + ", " + nickname + ", " + email);
+        return new kakaoUserInfoDto(id, nickname, email);
     }
+
+
 }
