@@ -9,11 +9,16 @@ import com.shop.selectshop.model.User;
 import com.shop.selectshop.model.UserRoleEnum;
 import com.shop.selectshop.repository.UserRepository;
 
+import com.shop.selectshop.security.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -21,6 +26,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -64,7 +70,35 @@ public class UserService {
         String accessToken = getAccessToken(code);
 
         // 2. 토큰으로 카카오 API 호출
-        kakaoUserInfoDto kakaoUserInfoDto = getKakaoUserInfo(accessToken);
+        kakaoUserInfoDto kakaoUserInfo = getKakaoUserInfo(accessToken);
+
+        // db에 중복된 kaakoId가 있는지 확인
+        Long kakaoId = kakaoUserInfo.getId();
+        User kakaoUser = userRepository.findByKakaoId(kakaoId).orElse(null);
+
+        if (kakaoUser == null) {
+            // 회원가입
+            // username: kakao nickname
+            String nickname = kakaoUserInfo.getNickname();
+
+            // password: random UUID
+            String password = UUID.randomUUID().toString();
+            String encodePassword = passwordEncoder.encode(password);
+
+            // email: kakao email
+            String email = kakaoUserInfo.getEmail();
+            // role: 일반 사용자
+            UserRoleEnum role = UserRoleEnum.USER;
+
+            kakaoUser = new User(nickname, password,email, role, kakaoId);
+            userRepository.save(kakaoUser);
+        }
+
+        // 4. 강제 로그인 처리
+        UserDetails userDetails = new UserDetailsImpl(kakaoUser);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
     }
 
     private String getAccessToken(String code) throws JsonProcessingException {

@@ -32,10 +32,25 @@ public class User {
     @Enumerated(value = EnumType.STRING) // db에 enum값을 string으로 변환해서 저장해주겠다!
     private UserRoleEnum role;
 
+
+    @Column(nullable = true, unique = true)
+    private Long kakaoId;
+
     public User(String username, String password, String email, UserRoleEnum role) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.role = role;
+        this.kakaoId = null;
     }
+
+
+    public User(String username, String password, String email, UserRoleEnum role, Long kakaoId) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.role = role;
+        this.kakaoId = kakaoId;
+    }
+
 }
