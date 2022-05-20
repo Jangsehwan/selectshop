@@ -117,21 +117,32 @@ public class KakaoUserService {
         Long kakaoId = kakaoUserInfo.getId();
         User kakaoUser = userRepository.findByKakaoId(kakaoId).orElse(null);
 
+
         if (kakaoUser == null) {
-            // 회원가입
-            // username: kakao nickname
-            String nickname = kakaoUserInfo.getNickname();
+            // 카카오 사용자 이메일과 동일한 이메일을 가진 회원이 있는지 확인
+            String kakaoEmail = kakaoUserInfo.getEmail();
+            User sameEmailUser = userRepository.findByEmail(kakaoEmail).orElse(null);
 
-            // password: random UUID
-            String password = UUID.randomUUID().toString();
-            String encodePassword = passwordEncoder.encode(password);
+            if(sameEmailUser != null) {
+                kakaoUser = sameEmailUser;
+                // 기존 회원정보에 카카오Id 추가
+                kakaoUser.setKakaoId(kakaoId);
+            } else {
+                // 신규 회원가입
+                // username: kakao nickname
+                String nickname = kakaoUserInfo.getNickname();
 
-            // email: kakao email
-            String email = kakaoUserInfo.getEmail();
-            // role: 일반 사용자
-            UserRoleEnum role = UserRoleEnum.USER;
+                // password: random UUID
+                String password = UUID.randomUUID().toString();
+                String encodePassword = passwordEncoder.encode(password);
 
-            kakaoUser = new User(nickname, password,email, role, kakaoId);
+                // email: kakao email
+                String email = kakaoUserInfo.getEmail();
+                // role: 일반 사용자
+                UserRoleEnum role = UserRoleEnum.USER;
+
+                kakaoUser = new User(nickname, password,email, role, kakaoId);
+            }
             userRepository.save(kakaoUser);
         }
         return kakaoUser;
