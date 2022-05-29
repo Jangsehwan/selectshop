@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Optional;
 
@@ -26,7 +27,7 @@ class ProductServiceTest {
     @Test
     @DisplayName("관심 상품 희망가 - 최저가 이상으로 변경")
     void updateProduct_Normal() {
-// given
+        // given
         Long productId = 100L;
         int myprice = MIN_MY_PRICE + 1000;
 
