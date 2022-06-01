@@ -84,6 +84,7 @@ class UserProductMvcTest {
         UserRoleEnum role = UserRoleEnum.USER;
         User testUser = new User(username, password, email, role);
         UserDetailsImpl testUserDetails = new UserDetailsImpl(testUser);
+
         mockPrincipal = new UsernamePasswordAuthenticationToken(testUserDetails, "", testUserDetails.getAuthorities());
     }
 

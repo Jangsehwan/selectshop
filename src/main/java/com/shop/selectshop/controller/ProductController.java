@@ -6,6 +6,7 @@ import com.shop.selectshop.dto.ProductRequestDto;
 import com.shop.selectshop.model.UserRoleEnum;
 import com.shop.selectshop.security.UserDetailsImpl;
 import com.shop.selectshop.service.ProductService;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,12 +31,12 @@ public class ProductController {
     @PostMapping("/api/products")
     public Product createProduct(@RequestBody ProductRequestDto requestDto,
                                  @AuthenticationPrincipal UserDetailsImpl userDetails) {
-// 로그인 되어 있는 회원 테이블의 ID
+        // 로그인 되어 있는 회원 테이블의 ID
         Long userId = userDetails.getUser().getId();
 
         Product product = productService.createProduct(requestDto, userId);
 
-// 응답 보내기
+        // 응답 보내기
         return product;
     }
 
@@ -44,24 +45,37 @@ public class ProductController {
     public Long updateProduct(@PathVariable Long id, @RequestBody ProductMypriceRequestDto requestDto) {
         Product product = productService.updateProduct(id, requestDto);
 
-// 응답 보내기 (업데이트된 상품 id)
+        // 응답 보내기 (업데이트된 상품 id)
         return product.getId();
     }
 
     // 로그인한 회원이 등록한 관심 상품 조회
     @GetMapping("/api/products")
-    public List<Product> getProducts(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-// 로그인 되어 있는 회원 테이블의 ID
+    public Page<Product> getProducts(
+            @RequestParam("page") int page,
+            @RequestParam("size") int size,
+            @RequestParam("sortBy") String sortBy,
+            @RequestParam("isAsc") boolean isAsc,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        // 로그인 되어 있는 회원 테이블의 ID
         Long userId = userDetails.getUser().getId();
+        page = page - 1;
 
-        return productService.getProducts(userId);
+        return productService.getProducts(userId, page, size, sortBy, isAsc);
     }
 
     // (관리자용) 전체 상품 조회
     @Secured(UserRoleEnum.Authority.ADMIN)
     @GetMapping("/api/admin/products")
-    public List<Product> getAllProducts() {
+    public Page<Product> getAllProducts(
+            @RequestParam("page") int page,
+            @RequestParam("size") int size,
+            @RequestParam("sortBy") String sortBy,
+            @RequestParam("isAsc") boolean isAsc
+    ) {
+        page = page - 1;
 
-        return productService.getAllProducts();
+        return productService.getAllProducts(page, size, sortBy, isAsc);
     }
 }
