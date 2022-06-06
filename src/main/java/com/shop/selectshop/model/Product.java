@@ -10,6 +10,7 @@ import javax.persistence.*;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 
 @Setter
 @Getter // get 함수를 일괄적으로 만들어줍니다.
@@ -41,6 +42,9 @@ public class Product {
     @Column(nullable = false)
     private Long userId;
 
+    @ManyToMany
+    private List<Folder> folderList;
+
     // 관심 상품 생성 시 이용합니다.
     public Product(ProductRequestDto requestDto, Long userId) {
         // 입력값 Validation
@@ -55,4 +59,7 @@ public class Product {
         this.myprice = 0;
     }
 
+    public void addFolder(Folder folder) {
+        this.folderList.add(folder);
+    }
 }

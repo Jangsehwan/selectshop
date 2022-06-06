@@ -3,6 +3,7 @@ package com.shop.selectshop.controller;
 import com.shop.selectshop.model.Product;
 import com.shop.selectshop.dto.ProductMypriceRequestDto;
 import com.shop.selectshop.dto.ProductRequestDto;
+import com.shop.selectshop.model.User;
 import com.shop.selectshop.model.UserRoleEnum;
 import com.shop.selectshop.security.UserDetailsImpl;
 import com.shop.selectshop.service.ProductService;
@@ -78,4 +79,19 @@ public class ProductController {
 
         return productService.getAllProducts(page, size, sortBy, isAsc);
     }
+
+    // product에 folder를 추가
+    @PostMapping("api/products/{productId}/folder")
+    public Long addFolder(
+            @PathVariable Long productId,
+            @RequestParam Long  folderId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ){
+        User user = userDetails.getUser();
+        Product product = productService.addFolder(productId, folderId, user);
+
+        return product.getId();
+    }
+
+
 }
